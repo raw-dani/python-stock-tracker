@@ -1,15 +1,25 @@
 import yfinance as yf
 import pandas as pd
-import talib
+import numpy as np
 from datetime import datetime, timedelta
 import db
-import yfinance as yf
-import pandas as pd
-import talib
-from datetime import datetime, timedelta
-import yfinance as yf
-import pandas as pd
-from datetime import datetime, timedelta
+
+def calculate_rsi(prices, period=14):
+    """
+    Calculate Relative Strength Index (RSI) manually.
+    """
+    delta = prices.diff()
+    gain = (delta.where(delta > 0, 0)).rolling(window=period).mean()
+    loss = (-delta.where(delta < 0, 0)).rolling(window=period).mean()
+    rs = gain / loss
+    rsi = 100 - (100 / (1 + rs))
+    return rsi
+
+def calculate_sma(prices, period=14):
+    """
+    Calculate Simple Moving Average (SMA) manually.
+    """
+    return prices.rolling(window=period).mean()
 
 def fetch_stock_data(symbol, period='6mo', interval='1h'):
     """
@@ -56,10 +66,10 @@ def calculate_indicators(data, rsi_period=14, sma_period=14):
     data.columns = data.columns.str.lower()
 
     # Calculate RSI
-    data['RSI'] = talib.RSI(data['close'].values, timeperiod=rsi_period)
+    data['RSI'] = calculate_rsi(data['close'], period=rsi_period)
 
     # Calculate SMA
-    data['SMA'] = talib.SMA(data['close'].values, timeperiod=sma_period)
+    data['SMA'] = calculate_sma(data['close'], period=sma_period)
 
     return data
 
@@ -129,8 +139,8 @@ def screen_breakout_stocks(symbols, interval='1h'):
             current_volume = data['volume'].iloc[-1]
 
             # Calculate RSI for momentum
-            rsi = talib.RSI(data['close'].values, timeperiod=14)
-            current_rsi = rsi[-1] if len(rsi) > 0 else 50
+            rsi = calculate_rsi(data['close'], period=14)
+            current_rsi = rsi.iloc[-1] if not rsi.empty else 50
 
             # Breakout conditions
             price_breakout = current_close > recent_high * 1.02  # 2% above recent high
