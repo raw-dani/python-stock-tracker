@@ -73,30 +73,118 @@ def calculate_indicators(data, rsi_period=14, sma_period=14):
 
     return data
 
-def screen_stocks(symbols, interval='1h', criteria='rsi_only', rsi_period=14, sma_period=14, rsi_threshold=40):
+def get_stock_info(symbol):
     """
-    Screen stocks based on criteria.
+    Get stock info including market cap and average volume.
+    :param symbol: Stock symbol
+    :return: Dict with market cap and volume info
+    """
+    try:
+        import yfinance as yf
+        stock = yf.Ticker(symbol)
+        info = stock.info
+
+        market_cap = info.get('marketCap', 0)
+        avg_volume = info.get('averageVolume', 0)
+
+        return {
+            'symbol': symbol,
+            'market_cap': market_cap,
+            'avg_volume': avg_volume
+        }
+    except Exception as e:
+        print(f"Error getting info for {symbol}: {e}")
+        return {
+            'symbol': symbol,
+            'market_cap': 0,
+            'avg_volume': 0
+        }
+
+def screen_stocks(symbols, interval='1h', criteria='rsi_only', rsi_period=14, sma_period=14, rsi_threshold=40, momentum_days=7, min_volume=1000000, min_market_cap=1000000000):
+    """
+    Screen stocks based on criteria with volume and market cap filters.
     :param symbols: List of stock symbols
-    :param interval: Timeframe ('1h' or '4h')
-    :param criteria: 'rsi_only' or 'trend_naik'
+    :param interval: Timeframe ('1h', '4h', '1d')
+    :param criteria: 'rsi_only', 'trend_naik', or 'rsi_momentum'
     :param rsi_period: RSI period
     :param sma_period: SMA period
     :param rsi_threshold: RSI threshold
+    :param momentum_days: Days for momentum comparison (default 7)
+    :param min_volume: Minimum average volume (default 1M)
+    :param min_market_cap: Minimum market cap in USD (default 1B)
     :return: List of dicts with screened stocks
     """
     results = []
     for symbol in symbols:
+        # First check volume and market cap filters
+        stock_info = get_stock_info(symbol)
+        if stock_info['avg_volume'] < min_volume or stock_info['market_cap'] < min_market_cap:
+            continue  # Skip stocks that don't meet volume/market cap criteria
+
         data = fetch_stock_data(symbol, interval=interval)
         if data is not None:
             data = calculate_indicators(data, rsi_period=rsi_period, sma_period=sma_period)
-            if data is not None and not data['RSI'].empty:
+            if data is not None and not data['RSI'].empty and len(data) > 20:
                 latest_rsi = data['RSI'].iloc[-1]
                 latest_sma = data['SMA'].iloc[-1]
                 latest_close = data['close'].iloc[-1]
+
+                # Calculate candles per day based on interval
+                if interval == '1W':
+                    # For weekly, we need at least 2 weeks of data for momentum comparison
+                    # Current period = last 1 candle (1 week)
+                    # Previous period = previous 1 candle (1 week before)
+                    total_candles = 2  # Minimum 2 candles for weekly comparison
+                elif interval == '1d':
+                    candles_per_day = 1
+                    total_candles = momentum_days * candles_per_day
+                elif interval == '4h':
+                    candles_per_day = 6  # 24/4 = 6
+                    total_candles = momentum_days * candles_per_day
+                elif interval == '1h':
+                    candles_per_day = 24
+                    total_candles = momentum_days * candles_per_day
+                else:
+                    candles_per_day = 1  # default
+                    total_candles = momentum_days * candles_per_day
+
+                # Ensure total_candles is integer
+                total_candles = int(total_candles)
+
+                if len(data) >= total_candles:  # Need enough data for comparison
+                    if interval == '1W':
+                        # Special handling for weekly data
+                        # Current period: last 1 candle (current week)
+                        # Previous period: previous 1 candle (previous week)
+                        current_rsi_avg = data['RSI'].tail(1).mean()
+                        prev_rsi_avg = data['RSI'].iloc[-2:-1].mean() if len(data) >= 2 else data['RSI'].iloc[0]
+                        current_sma_avg = data['SMA'].tail(1).mean()
+                        prev_sma_avg = data['SMA'].iloc[-2:-1].mean() if len(data) >= 2 else data['SMA'].iloc[0]
+                    else:
+                        # For other timeframes, use standard calculation
+                        # Current period: last total_candles
+                        current_rsi_avg = data['RSI'].tail(total_candles).mean()
+                        # Previous period: total_candles before current
+                        prev_rsi_avg = data['RSI'].iloc[-(total_candles*2):-total_candles].mean()
+                        current_sma_avg = data['SMA'].tail(total_candles).mean()
+                        prev_sma_avg = data['SMA'].iloc[-(total_candles*2):-total_candles].mean()
+
+                    rsi_momentum = current_rsi_avg > prev_rsi_avg
+                    sma_momentum = current_sma_avg > prev_sma_avg
+                else:
+                    rsi_momentum = False
+                    sma_momentum = False
+                    current_rsi_avg = latest_rsi
+                    prev_rsi_avg = latest_rsi
+                    current_sma_avg = latest_sma
+                    prev_sma_avg = latest_sma
+
                 if criteria == 'rsi_only':
                     condition = latest_rsi < rsi_threshold
                 elif criteria == 'trend_naik':
                     condition = latest_rsi < rsi_threshold and latest_close > latest_sma
+                elif criteria == 'rsi_momentum':
+                    condition = rsi_momentum and sma_momentum
                 else:
                     condition = False
 
@@ -104,8 +192,16 @@ def screen_stocks(symbols, interval='1h', criteria='rsi_only', rsi_period=14, sm
                     results.append({
                         'symbol': symbol,
                         'rsi': latest_rsi,
+                        'rsi_current_avg': current_rsi_avg,
+                        'rsi_prev_avg': prev_rsi_avg,
+                        'rsi_momentum': current_rsi_avg - prev_rsi_avg,
+                        'sma_current_avg': current_sma_avg,
+                        'sma_prev_avg': prev_sma_avg,
+                        'sma_momentum': current_sma_avg - prev_sma_avg,
                         'sma': latest_sma,
                         'close_price': latest_close,
+                        'avg_volume': stock_info['avg_volume'],
+                        'market_cap': stock_info['market_cap'],
                         'timeframe': interval
                     })
     # Save results to db

@@ -1,18 +1,16 @@
-# Aplikasi Screening Saham NASDAQ
+# 📈 Screening Saham NASDAQ - RSI Momentum
 
-Aplikasi web untuk screening saham NASDAQ berdasarkan indikator teknikal RSI dan SMA dengan interface Streamlit.
+Aplikasi desktop sederhana untuk menemukan saham NASDAQ dengan momentum RSI bullish menggunakan Streamlit.
 
-## Fitur Utama
+## ✨ Fitur Utama
 
-- **Screening RSI**: Filter saham berdasarkan kriteria RSI dan trend naik
-- **Screening Breakout**: Deteksi saham dengan potensi breakout ke atas
-- **Screening Reversal**: Deteksi pembalikan trend dari turun ke naik
-- **Kustomisasi Parameter**: Atur panjang RSI/SMA dan threshold sesuai kebutuhan
-- **Multiple Timeframe**: Support 15M, 1H, 4H, dan 1D
-- **Database Caching**: Simpan data historis untuk performa optimal
-- **Saham Tambahan**: Tambahkan simbol saham custom selain list default
-- **Link TradingView**: Langsung buka chart dengan timeframe sesuai
-- **Pengelolaan Data**: Fitur clear data untuk maintenance
+- **🎯 Screening RSI Momentum**: Filter saham berdasarkan peningkatan rata-rata RSI 7 hari terakhir vs sebelumnya
+- **📊 Dual Momentum Check**: Kombinasi RSI momentum + SMA momentum untuk sinyal yang lebih akurat
+- **⚡ Real-time Data**: Menggunakan data langsung dari Yahoo Finance
+- **🎨 Interface Sederhana**: UI yang user-friendly dengan emoji dan layout yang intuitif
+- **💾 Database Caching**: Simpan data historis untuk performa optimal
+- **🔗 TradingView Integration**: Link langsung ke chart NASDAQ & NYSE dengan timeframe sesuai
+- **📱 Desktop App**: Jalankan sebagai aplikasi standalone tanpa browser
 
 ## Persyaratan Sistem
 
@@ -36,12 +34,20 @@ cd saham-screening
 pip install -r requirements.txt
 ```
 
-Dependencies yang diperlukan:
-- streamlit==1.49.1
-- yfinance==0.2.65
-- TA-Lib==0.6.7
-- pandas==2.3.2
-- numpy==2.3.3
+## 📦 Dependencies
+
+```txt
+streamlit==1.28.1          # Web app framework
+yfinance==0.2.28           # Yahoo Finance data
+pandas==1.5.3              # Data manipulation
+numpy==1.24.3              # Numerical computing
+pyinstaller==6.3.0         # Build executable
+```
+
+**Install semua dependencies:**
+```bash
+pip install -r requirements.txt
+```
 
 ### 3. Jalankan Aplikasi
 
@@ -49,61 +55,109 @@ Dependencies yang diperlukan:
 streamlit run app.py
 ```
 
+### 4. Jalankan sebagai Desktop App (Alternatif)
+
+Untuk menjalankan sebagai aplikasi desktop standalone:
+
+```bash
+python launcher.py
+```
+
+Aplikasi akan membuka browser otomatis dengan interface desktop.
+
+#### Membuat Executable untuk Distribusi
+
+```bash
+# Install PyInstaller
+pip install pyinstaller
+
+# Build executable
+python build_exe.py
+```
+
+File `SahamScreeningApp.exe` akan dibuat di folder `dist/`. File ini bisa didistribusikan dan dijalankan tanpa install Python.
+
 Aplikasi akan terbuka di browser pada `http://localhost:8503`
 
-## Cara Penggunaan
+## 🚀 Cara Penggunaan
 
-### 1. Pilih Kriteria Screening
+### 1. Jalankan Aplikasi
 
-- **RSI < 40**: Filter saham dengan RSI di bawah 40 saja
-- **RSI < 40 dan Trend Naik**: Filter saham dengan RSI < 40 DAN harga > SMA (trend bullish)
+**Desktop App (Recommended):**
+```bash
+python launcher.py
+```
+
+**Web App:**
+```bash
+streamlit run app.py
+```
 
 ### 2. Konfigurasi Parameter
 
-- **Panjang RSI**: Periode untuk perhitungan RSI (default: 14)
-- **Panjang SMA**: Periode untuk perhitungan SMA (default: 14)
-- **Nilai RSI di Bawah**: Threshold RSI (default: 40)
+- **⏰ Timeframe**: Pilih interval data (1h, 4h, 1d, 1W) - default 1d untuk sinyal yang lebih reliable
+- **📊 Panjang RSI**: Periode perhitungan RSI (default: 14)
+- **📈 Panjang SMA**: Periode perhitungan SMA (default: 14)
+- **📅 Hari Momentum**: Jumlah hari untuk perbandingan momentum (default: 7)
 
-### 3. Pilih Timeframe
+### 3. Tambah Saham Custom (Opsional)
 
-- **1h**: Data 1 jam
-- **4h**: Data 4 jam
-- **1d**: Data harian
-
-### 4. Tambah Saham Custom (Opsional)
-
-Masukkan simbol saham tambahan dipisahkan koma:
+Masukkan simbol saham tambahan di field "Saham Tambahan":
 ```
 TSLA,GOOGL,NFLX
 ```
 
-### 5. Jalankan Screening
+### 4. Jalankan Screening
 
-Klik tombol "Jalankan Screening" untuk memulai proses.
+Klik tombol **"🚀 Jalankan Screening Momentum"** untuk memulai analisis.
 
-### 6. Lihat Hasil
+### 5. Konfigurasi Filter
 
-#### Tab RSI Screening
-Hasil akan ditampilkan dalam tabel dengan kolom:
-- Symbol: Kode saham (link ke TradingView dengan timeframe sesuai)
-- RSI: Nilai RSI terakhir
-- SMA: Nilai SMA terakhir
-- Close Price: Harga penutupan terakhir
-- Timeframe: Timeframe yang digunakan
+- **📊 Min Volume Harian**: Minimum volume perdagangan harian (dalam jutaan saham)
+- **💰 Min Kapitalisasi Pasar**: Minimum market cap perusahaan (100M - 50B USD)
 
-#### Tab Breakout Screening
-Hasil akan ditampilkan dalam list dengan informasi:
-- Symbol: Kode saham (link ke TradingView)
-- Breakout Strength: Kekuatan breakout dalam persen
-- Close Price: Harga penutupan terakhir
-- RSI: Nilai RSI untuk konfirmasi momentum
+### 6. Interpretasi Hasil
 
-#### Tab Reversal Screening
-Hasil akan ditampilkan dalam list dengan informasi:
-- Symbol: Kode saham (link ke TradingView)
-- Reversal Strength: Kekuatan pembalikan dalam persen
-- Close Price: Harga penutupan terakhir
-- RSI: Nilai RSI untuk konfirmasi momentum naik
+Aplikasi akan menampilkan saham yang memenuhi **EMPAT kondisi** dan **diurutkan berdasarkan profitabilitas**:
+
+#### ✅ Kriteria Screening:
+- **RSI Momentum**: Rata-rata RSI 7 hari terakhir > sebelumnya
+- **SMA Momentum**: Rata-rata SMA 7 hari terakhir > sebelumnya
+- **Volume Minimum**: Volume harian > threshold yang dipilih
+- **Market Cap Minimum**: Kapitalisasi pasar > threshold yang dipilih
+
+#### 🏆 Sistem Ranking Profitabilitas:
+Hasil diurutkan berdasarkan **Skor Profitabilitas** (0-1.00):
+
+```
+Profitability Score = (Momentum × 60%) + (Volume × 30%) + (Market Cap × 10%)
+
+Dimana:
+- Momentum = (RSI_momentum + SMA_momentum) ÷ 2
+- Volume = min(Volume_M / 10M, 1.0)  [capped at 10M volume]
+- Market Cap = min(Market_Cap_B / 100B, 1.0)  [capped at $100B]
+```
+
+#### 🥇 Format Tampilan:
+- **🥇🥈🥉 Medali**: Untuk 3 ranking teratas
+- **⭐ Skor Profitabilitas**: Total score 0-1.00
+- **📊 Tampilan Expandable**: Semua saham bisa di-expand untuk detail lengkap
+- **🔍 Expander**: Top 3 terbuka otomatis, sisanya bisa diklik untuk detail
+
+### 6. Format Tampilan Hasil
+
+Aplikasi menampilkan hasil dalam **format card yang mudah dibaca**:
+
+#### 📊 **Ringkasan Visual per Saham:**
+- **🟢/🟡/🔴 Indikator Momentum**: Warna menunjukkan kekuatan momentum
+- **📈 RSI Momentum**: Perbandingan rata-rata 7 hari terakhir vs sebelumnya
+- **📊 SMA Momentum**: Perbandingan rata-rata trend 7 hari
+- **💰 Harga**: Harga penutupan real-time
+- **💧 Likuiditas**: Indikator volume perdagangan
+- **🔗 TradingView**: Link langsung ke chart
+
+#### 📋 **Tabel Detail Lengkap (Opsional):**
+Tersedia dalam expander untuk melihat semua data teknikal lengkap dengan format tabel tradisional.
 
 ## Pengelolaan Data
 
@@ -127,323 +181,100 @@ Indicator Calculation (TA-Lib)
 Database (SQLite)
 ```
 
-## Troubleshooting
+## 🔧 Troubleshooting
 
-### Error: Module not found
-Pastikan semua dependencies terinstall dengan benar:
+### ❌ Error: Module not found
 ```bash
 pip install -r requirements.txt
 ```
 
-### Error: No data found for symbol
-Saham mungkin delisted atau simbol tidak valid. Cek simbol di Yahoo Finance.
+### ❌ Error: No data found for symbol
+Saham mungkin delisted atau simbol tidak valid. Cek di Yahoo Finance atau gunakan simbol yang valid.
 
-### Error: Database locked
-Tutup aplikasi dan jalankan ulang, atau hapus file `stock_data.db`.
+### ❌ Error: Database locked
+Tutup aplikasi dan jalankan ulang, atau hapus file `stock_data.db` jika corrupt.
 
-### Aplikasi lambat
-- Kurangi jumlah saham dengan memilih subset
-- Gunakan timeframe yang lebih besar (1d lebih cepat dari 1h)
-- Data akan di-cache setelah pertama kali diambil
+### ❌ Aplikasi lambat / Tidak ada hasil
+- **Cek koneksi internet** - aplikasi butuh koneksi untuk data real-time
+- **Gunakan timeframe 1d** - lebih cepat dan reliable
+- **Kurangi saham custom** - terlalu banyak saham membuat lambat
+- **Data akan di-cache** setelah pertama kali diambil
 
-## File Struktur
+### ❌ Build executable gagal
+- Pastikan semua dependencies terinstall
+- Gunakan Python 3.12 untuk compatibility terbaik
+- Cek ruang disk yang cukup
+
+### 💡 Tips Optimasi
+- **Timeframe 1d** memberikan sinyal yang lebih reliable
+- **Momentum 7 hari** adalah default yang balanced
+- **RSI period 14** dan **SMA period 14** adalah standard
+
+##  Struktur File
 
 ```
 saham-screening/
-├── app.py              # Main Streamlit application
-├── utils.py            # Utility functions for data fetching and calculations
-├── db.py               # Database operations
-├── test.py             # Test script
-├── requirements.txt    # Python dependencies
-├── README.md           # This file
-└── stock_data.db       # SQLite database (created automatically)
+├── app.py              # 🎨 Main Streamlit application (UI sederhana)
+├── utils.py            # 🔧 Core logic: RSI/SMA momentum calculation
+├── db.py               # 💾 Database operations (SQLite)
+├── launcher.py         # 🚀 Desktop app launcher
+├── build_exe.py        # 📦 Script to build executable
+├── test_momentum.py    # 🧪 Test script for momentum logic
+├── requirements.txt    # 📋 Python dependencies
+├── README.md           # 📖 This documentation
+└── stock_data.db       # 💽 SQLite database (auto-created)
 ```
 
-## API Reference
+## 📚 API Reference
 
-### utils.py
+### 🔧 utils.py - Core Functions
 
 #### `get_nasdaq_symbols()`
-Mengembalikan list simbol saham NASDAQ default.
+Mengembalikan list ~100 simbol saham NASDAQ populer.
 
 #### `fetch_stock_data(symbol, period='6mo', interval='1h')`
-Mengambil data historis saham dari Yahoo Finance.
+Mengambil data historis real-time dari Yahoo Finance dengan caching.
 
 #### `calculate_indicators(data, rsi_period=14, sma_period=14)`
-Menghitung RSI dan SMA dari data saham.
+Menghitung RSI dan SMA dari data OHLCV.
 
-#### `screen_stocks(symbols, interval='1h', criteria='rsi_only', rsi_period=14, sma_period=14, rsi_threshold=40)`
-Melakukan screening saham berdasarkan kriteria.
+#### `screen_stocks(symbols, interval='1h', criteria='rsi_momentum', rsi_period=14, sma_period=14, momentum_days=7, min_volume=1000000, min_market_cap=1000000000)`
+**Core function**: Screening saham berdasarkan momentum RSI + SMA dengan filter volume dan market cap.
 
-### db.py
+**Parameter:**
+- `symbols`: List simbol saham
+- `interval`: Timeframe ('1d', '4h', '1h', '1W')
+- `criteria`: 'rsi_momentum' (satu-satunya kriteria)
+- `rsi_period`: Periode RSI (default: 14)
+- `sma_period`: Periode SMA (default: 14)
+- `momentum_days`: Hari untuk perbandingan momentum (default: 7)
+- `min_volume`: Minimum volume harian (default: 1M)
+- `min_market_cap`: Minimum market cap USD (default: 1B)
+
+**Return:** List dict dengan data momentum, volume, dan market cap.
+
+### 💾 db.py - Database Operations
 
 #### `init_db()`
-Inisialisasi database dan tabel.
-
-#### `save_stock_data(symbol, data)`
-Menyimpan data saham ke database.
-
-#### `load_stock_data(symbol)`
-Memuat data saham dari database.
+Auto-create tabel dengan kolom momentum yang diperlukan.
 
 #### `save_screening_results(results)`
-Menyimpan hasil screening.
+Simpan hasil screening dengan kolom momentum (RSI + SMA).
 
 #### `load_screening_results()`
-Memuat hasil screening terakhir.
+Load hasil screening terakhir dengan filter momentum.
 
-#### `clear_screening_results()`
-Menghapus semua hasil screening.
+## ⚖️ Disclaimer
 
-#### `clear_stock_data()`
-Menghapus semua data saham.
+**⚠️ PENTING:** Aplikasi ini untuk tujuan edukasi dan riset teknikal saja. **BUKAN** saran investasi. Selalu lakukan research sendiri dan konsultasi dengan financial advisor sebelum mengambil keputusan investasi.
 
-## Deployment di CyberPanel
+## 📞 Support
 
-### Persiapan Server
+Jika ada pertanyaan atau masalah:
+- Cek bagian Troubleshooting di atas
+- Pastikan semua dependencies terinstall dengan benar
+- Verifikasi koneksi internet untuk data real-time
 
-1. **Install Python 3.8+ di Server**
-```bash
-# Update system
-sudo apt update && sudo apt upgrade -y
+---
 
-# Install Python dan pip
-sudo apt install python3 python3-pip python3-venv -y
-
-# Verifikasi instalasi
-python3 --version
-pip3 --version
-```
-
-2. **Setup Virtual Environment**
-```bash
-# Buat direktori aplikasi
-mkdir -p /home/youruser/stock-screening
-cd /home/youruser/stock-screening
-
-# Buat virtual environment
-python3 -m venv venv
-source venv/bin/activate
-
-# Install dependencies
-pip install -r requirements.txt
-```
-
-### Konfigurasi CyberPanel
-
-1. **Buat Website di CyberPanel**
-   - Login ke CyberPanel
-   - Websites → Create Website
-   - Masukkan domain (contoh: stockscreening.example.com)
-   - Pilih package hosting
-   - Enable SSL jika ada
-
-2. **Upload Files Aplikasi**
-```bash
-# Upload semua file aplikasi ke direktori website
-# Contoh: /home/youruser/public_html/stockscreening.example.com
-scp -r * youruser@server_ip:/home/youruser/public_html/stockscreening.example.com/
-```
-
-3. **Setup Python Environment**
-```bash
-# Di server, masuk ke direktori aplikasi
-cd /home/youruser/public_html/stockscreening.example.com
-
-# Setup virtual environment
-python3 -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
-```
-
-### Menjalankan Aplikasi
-
-#### Opsi 1: Menggunakan Systemd Service (Recommended)
-
-1. **Buat Service File**
-```bash
-sudo nano /etc/systemd/system/stock-screening.service
-```
-
-Isi file:
-```ini
-[Unit]
-Description=Stock Screening Streamlit App
-After=network.target
-
-[Service]
-User=youruser
-Group=youruser
-WorkingDirectory=/home/youruser/public_html/stockscreening.example.com
-Environment="PATH=/home/youruser/public_html/stockscreening.example.com/venv/bin"
-ExecStart=/home/youruser/public_html/stockscreening.example.com/venv/bin/streamlit run app.py --server.port 8501 --server.address 0.0.0.0
-Restart=always
-
-[Install]
-WantedBy=multi-user.target
-```
-
-2. **Enable dan Start Service**
-```bash
-sudo systemctl daemon-reload
-sudo systemctl enable stock-screening
-sudo systemctl start stock-screening
-sudo systemctl status stock-screening
-```
-
-#### Opsi 2: Menggunakan PM2 (Alternative)
-
-```bash
-# Install PM2
-npm install -g pm2
-
-# Buat ecosystem file
-nano ecosystem.config.js
-```
-
-Isi ecosystem.config.js:
-```javascript
-module.exports = {
-  apps: [{
-    name: 'stock-screening',
-    script: '/home/youruser/public_html/stockscreening.example.com/venv/bin/streamlit',
-    args: 'run app.py --server.port 8501 --server.address 0.0.0.0',
-    cwd: '/home/youruser/public_html/stockscreening.example.com',
-    env: {
-      PATH: '/home/youruser/public_html/stockscreening.example.com/venv/bin'
-    }
-  }]
-}
-```
-
-```bash
-# Start aplikasi
-pm2 start ecosystem.config.js
-pm2 save
-pm2 startup
-```
-
-### Konfigurasi Reverse Proxy
-
-1. **Setup di CyberPanel**
-   - Masuk ke CyberPanel → Websites → List Websites
-   - Klik domain → Manage → Rewrite Rules
-   - Tambahkan rule untuk proxy ke port 8501
-
-2. **Atau Edit Konfigurasi OpenLiteSpeed**
-```bash
-# Edit virtual host configuration
-sudo nano /usr/local/lsws/conf/vhosts/yourdomain/vhconf.conf
-```
-
-Tambahkan:
-```xml
-<proxy>
-  <proxyStart>1</proxyStart>
-  <address>127.0.0.1:8501</address>
-  <proxyPass>https://127.0.0.1:8501</proxyPass>
-</proxy>
-```
-
-3. **Restart OpenLiteSpeed**
-```bash
-sudo systemctl restart lsws
-```
-
-### Konfigurasi Firewall
-
-```bash
-# Buka port 8501 untuk internal access
-sudo ufw allow 8501
-sudo ufw reload
-```
-
-### SSL Certificate
-
-1. **Dapatkan SSL dari CyberPanel**
-   - Websites → List Websites → domain → SSL → Issue SSL
-
-2. **Atau menggunakan Let's Encrypt**
-```bash
-# Install certbot
-sudo apt install certbot -y
-
-# Dapatkan certificate
-sudo certbot certonly --webroot -w /home/youruser/public_html/stockscreening.example.com -d stockscreening.example.com
-```
-
-### Monitoring dan Maintenance
-
-1. **Log Aplikasi**
-```bash
-# Cek log systemd
-sudo journalctl -u stock-screening -f
-
-# Atau PM2 logs
-pm2 logs stock-screening
-```
-
-2. **Restart Aplikasi**
-```bash
-sudo systemctl restart stock-screening
-# atau
-pm2 restart stock-screening
-```
-
-3. **Backup Database**
-```bash
-# Backup SQLite database
-cp stock_data.db stock_data_backup_$(date +%Y%m%d_%H%M%S).db
-```
-
-### Troubleshooting
-
-1. **Aplikasi tidak bisa diakses**
-   - Cek status service: `sudo systemctl status stock-screening`
-   - Cek log: `sudo journalctl -u stock-screening -n 50`
-   - Pastikan port 8501 tidak blocked
-
-2. **Error koneksi database**
-   - Pastikan permission file: `chmod 664 stock_data.db`
-   - Cek path file database
-
-3. **Memory usage tinggi**
-   - Restart aplikasi secara berkala
-   - Kurangi jumlah saham yang di-screening
-
-4. **Slow performance**
-   - Enable caching dengan menambah RAM
-   - Gunakan SSD storage
-   - Optimalkan query database
-
-### Keamanan
-
-1. **Update sistem secara berkala**
-```bash
-sudo apt update && sudo apt upgrade -y
-```
-
-2. **Backup rutin**
-```bash
-# Setup cron job untuk backup harian
-crontab -e
-# Tambahkan: 0 2 * * * cp /home/youruser/stock_data.db /home/youruser/backup/stock_data_$(date +\%Y\%m\%d).db
-```
-
-3. **Monitor resource usage**
-```bash
-# Cek memory dan CPU
-htop
-# atau
-top
-```
-
-Dengan setup ini, aplikasi akan berjalan di `https://stockscreening.example.com` dengan SSL dan high availability.
-
-## Lisensi
-
-Aplikasi ini untuk tujuan edukasi dan riset. Tidak untuk saran investasi.
-
-## Kontak
-
-Jika ada pertanyaan atau masalah, silakan buat issue di repository.
+**🎯 Selamat menggunakan Screening Saham NASDAQ - RSI Momentum!**

@@ -1,125 +1,292 @@
 import streamlit as st
 import pandas as pd
-from utils import get_nasdaq_symbols, screen_stocks, screen_breakout_stocks, screen_reversal_stocks
-from db import init_db, load_screening_results, clear_screening_results, clear_stock_data
+from utils import get_nasdaq_symbols, screen_stocks
+from db import init_db, load_screening_results, clear_screening_results
 
 # Initialize database
 init_db()
 
-st.title("Aplikasi Screening Saham NASDAQ")
+st.title("📈 Screening Saham NASDAQ - RSI Momentum")
 
-# Create tabs
-tab1, tab2, tab3 = st.tabs(["RSI Screening", "Breakout Screening", "Reversal Screening"])
+st.markdown("""
+**Aplikasi sederhana untuk menemukan saham dengan momentum RSI bullish**
 
-with tab1:
-    st.header("Screening Berdasarkan RSI")
+**Kriteria Screening:**
+- ✅ Rata-rata RSI 7 hari terakhir > Rata-rata RSI 7 hari sebelumnya
+- ✅ Rata-rata SMA 7 hari terakhir > Rata-rata SMA 7 hari sebelumnya
+- 📊 Saham dengan momentum bullish pada kedua indikator teknikal
+""")
 
-    # Select criteria
-    criteria = st.selectbox("Pilih Kriteria Screening", ["RSI < 40", "RSI < 40 dan Trend Naik (Harga > SMA 14)"])
+# Select timeframe
+timeframe = st.selectbox("⏰ Pilih Timeframe", ["1h", "4h", "1d", "1W"], index=2)  # Default 1d
 
-    # Select timeframe
-    timeframe = st.selectbox("Pilih Timeframe", ["1h", "4h", "1d"])
+# Select RSI and SMA periods
+col1, col2 = st.columns(2)
+with col1:
+    rsi_period = st.number_input("📊 Panjang RSI", min_value=2, max_value=50, value=14, step=1)
+with col2:
+    sma_period = st.number_input("📈 Panjang SMA", min_value=2, max_value=50, value=14, step=1)
 
-    # Select RSI and SMA periods
-    rsi_period = st.number_input("Panjang RSI", min_value=2, max_value=50, value=14, step=1)
-    sma_period = st.number_input("Panjang SMA", min_value=2, max_value=50, value=14, step=1)
-    rsi_threshold = st.number_input("Nilai RSI di Bawah", min_value=1, max_value=100, value=40, step=1)
+momentum_days = st.number_input("📅 Hari untuk Momentum", min_value=1, max_value=30, value=7, step=1)
 
-    # Custom stock symbols
-    custom_symbols = st.text_input("Saham Tambahan (pisahkan dengan koma, contoh: TSLA,GOOGL)", value="")
+# Volume and Market Cap filters
+st.subheader("🎯 Filter Saham")
+col3, col4 = st.columns(2)
+with col3:
+    min_volume = st.number_input("📊 Min Volume Harian (juta)", min_value=0.1, max_value=100.0, value=1.0, step=0.1, help="Volume perdagangan minimum dalam jutaan saham")
+    min_volume = int(min_volume * 1000000)  # Convert to actual number
+with col4:
+    min_market_cap = st.selectbox("💰 Min Kapitalisasi Pasar",
+                                 ["100M", "500M", "1B", "5B", "10B", "50B"],
+                                 index=2,  # Default 1B
+                                 help="Kapitalisasi pasar minimum perusahaan")
+    
+    # Convert to actual number
+    cap_map = {"100M": 100000000, "500M": 500000000, "1B": 1000000000,
+              "5B": 5000000000, "10B": 10000000000, "50B": 50000000000}
+    min_market_cap = cap_map[min_market_cap]
 
-    # Button to run screening
-    if st.button("Jalankan Screening RSI"):
-        with st.spinner("Mengambil data dan menghitung indikator..."):
-            symbols = get_nasdaq_symbols()
-            if custom_symbols.strip():
-                custom_list = [s.strip().upper() for s in custom_symbols.split(',') if s.strip()]
-                symbols.extend(custom_list)
-            results = screen_stocks(symbols, interval=timeframe, criteria= "trend_naik" if "Trend Naik" in criteria else "rsi_only", rsi_period=rsi_period, sma_period=sma_period, rsi_threshold=rsi_threshold)
-            if results:
-                df = pd.DataFrame(results)
-                st.success(f"Ditemukan {len(results)} saham yang memenuhi kriteria.")
-                st.dataframe(df)
-            else:
-                st.warning("Tidak ada saham yang memenuhi kriteria.")
+# Custom stock symbols
+custom_symbols = st.text_input("➕ Saham Tambahan (pisahkan dengan koma)", value="", placeholder="TSLA,GOOGL,NFLX")
 
-    # Show previous results
-    st.subheader("Hasil Screening RSI Terakhir")
-    prev_results = load_screening_results()
-    if not prev_results.empty:
-        # Add TradingView links
-        def make_tradingview_link(symbol, timeframe):
-            interval_map = {'1h': '60', '4h': '240', '1d': 'D'}
-            interval = interval_map.get(timeframe, 'D')
-            url = f"https://www.tradingview.com/chart/?symbol=NASDAQ:{symbol}&interval={interval}"
-            return f'<a href="{url}" target="_blank">{symbol}</a>'
+# Button to run screening
+if st.button("🚀 Jalankan Screening Momentum", type="primary", use_container_width=True):
+    with st.spinner("🔍 Menganalisis momentum saham..."):
+        symbols = get_nasdaq_symbols()
+        if custom_symbols.strip():
+            custom_list = [s.strip().upper() for s in custom_symbols.split(',') if s.strip()]
+            symbols.extend(custom_list)
 
-        prev_results_copy = prev_results.copy()
-        prev_results_copy['symbol'] = prev_results_copy.apply(
-            lambda row: make_tradingview_link(row['symbol'], row['timeframe']), axis=1
-        )
-        st.write(prev_results_copy.to_html(escape=False, index=False), unsafe_allow_html=True)
-        if st.button("Hapus Semua Hasil Screening", key="clear_results_above"):
-            clear_screening_results()
-            st.success("Semua hasil screening telah dihapus.")
-            st.rerun()
-    else:
-        st.write("Belum ada hasil screening.")
+        results = screen_stocks(symbols, interval=timeframe, criteria="rsi_momentum",
+                              rsi_period=rsi_period, sma_period=sma_period,
+                              momentum_days=momentum_days, min_volume=min_volume,
+                              min_market_cap=min_market_cap)
 
-with tab2:
-    st.header("Screening Breakout Ke Atas")
+        if results:
+            df = pd.DataFrame(results)
 
-    # Select timeframe for breakout
-    breakout_timeframe = st.selectbox("Pilih Timeframe Breakout", ["15m", "1h", "4h", "1d"])
+            # Calculate profitability score for sorting
+            df['momentum_score'] = (df['rsi_momentum'] + df['sma_momentum']) / 2
+            df['volume_score'] = (df['avg_volume'] / 1000000).clip(upper=10) / 10  # Max 10M volume = score 1
+            df['market_cap_score'] = (df['market_cap'] / 1000000000).clip(upper=100) / 100  # Max $100B = score 1
 
-    # Custom stock symbols for breakout
-    breakout_custom_symbols = st.text_input("Saham Tambahan untuk Breakout (pisahkan dengan koma)", value="", key="breakout_custom")
+            # Combined profitability score (weighted)
+            df['profitability_score'] = (
+                df['momentum_score'] * 0.6 +  # 60% weight on momentum
+                df['volume_score'] * 0.3 +    # 30% weight on liquidity
+                df['market_cap_score'] * 0.1  # 10% weight on market cap
+            )
 
-    # Button to run breakout screening
-    if st.button("Jalankan Screening Breakout"):
-        with st.spinner("Menganalisis breakout..."):
-            symbols = get_nasdaq_symbols()
-            if breakout_custom_symbols.strip():
-                custom_list = [s.strip().upper() for s in breakout_custom_symbols.split(',') if s.strip()]
-                symbols.extend(custom_list)
-            breakout_results = screen_breakout_stocks(symbols, interval=breakout_timeframe)
-            if breakout_results:
-                st.success(f"Ditemukan {len(breakout_results)} saham dengan potensi breakout.")
-                # Display results with TradingView links
-                for result in breakout_results:
-                    symbol = result['symbol']
-                    interval_map = {'15m': '15', '1h': '60', '4h': '240', '1d': 'D'}
-                    tv_interval = interval_map.get(breakout_timeframe, 'D')
-                    url = f"https://www.tradingview.com/chart/?symbol=NASDAQ:{symbol}&interval={tv_interval}"
-                    st.markdown(f"- [{symbol}]({url}) - Breakout Strength: {result['breakout_strength']:.2f}")
-            else:
-                st.warning("Tidak ada saham dengan potensi breakout.")
+            # Sort by profitability score (highest first)
+            df = df.sort_values('profitability_score', ascending=False).reset_index(drop=True)
 
-with tab3:
-    st.header("Screening Reversal (Pembalikan Trend)")
+            st.success(f"🎯 Ditemukan {len(results)} saham dengan momentum bullish!")
+            st.info("📈 **Saham diurutkan berdasarkan potensi profitabilitas** (momentum + likuiditas + market cap)")
 
-    # Select timeframe for reversal
-    reversal_timeframe = st.selectbox("Pilih Timeframe Reversal", ["1d", "4h", "1h", "15m"], key="reversal_timeframe")
+            # Create compact summary display with expanders
+            st.subheader("🥇 Ranking Saham Terbaik Berdasarkan Profitabilitas")
 
-    # Custom stock symbols for reversal
-    reversal_custom_symbols = st.text_input("Saham Tambahan untuk Reversal (pisahkan dengan koma)", value="", key="reversal_custom")
+            # Show top 5 in expanded view, others in compact list
+            top_n = min(5, len(df))
 
-    # Button to run reversal screening
-    if st.button("Jalankan Screening Reversal"):
-        with st.spinner("Menganalisis pembalikan trend..."):
-            symbols = get_nasdaq_symbols()
-            if reversal_custom_symbols.strip():
-                custom_list = [s.strip().upper() for s in reversal_custom_symbols.split(',') if s.strip()]
-                symbols.extend(custom_list)
-            reversal_results = screen_reversal_stocks(symbols, interval=reversal_timeframe)
-            if reversal_results:
-                st.success(f"Ditemukan {len(reversal_results)} saham dengan sinyal reversal.")
-                # Display results with TradingView links
-                for result in reversal_results:
-                    symbol = result['symbol']
-                    interval_map = {'15m': '15', '1h': '60', '4h': '240', '1d': 'D'}
-                    tv_interval = interval_map.get(reversal_timeframe, 'D')
-                    url = f"https://www.tradingview.com/chart/?symbol=NASDAQ:{symbol}&interval={tv_interval}"
-                    st.markdown(f"- [{symbol}]({url}) - Reversal Strength: {result['reversal_strength']:.2f}% - RSI: {result['rsi']:.1f}")
-            else:
-                st.warning("Tidak ada saham dengan sinyal reversal.")
+            # Top 5 with detailed expanders
+            for i in range(top_n):
+                row = df.iloc[i]
+
+                # Ranking medals
+                if i == 0:
+                    rank_icon = "🥇"
+                    rank_text = "TOP PICK"
+                elif i == 1:
+                    rank_icon = "🥈"
+                    rank_text = "RUNNER UP"
+                elif i == 2:
+                    rank_icon = "🥉"
+                    rank_text = "THIRD PLACE"
+                else:
+                    rank_icon = f"#{i+1}"
+                    rank_text = f"RANK {i+1}"
+
+                # Momentum color coding for quick view
+                rsi_momentum = row['rsi_momentum']
+                sma_momentum = row['sma_momentum']
+
+                if rsi_momentum > 5:
+                    rsi_color = "🟢"
+                elif rsi_momentum > 0:
+                    rsi_color = "🟡"
+                else:
+                    rsi_color = "🔴"
+
+                if sma_momentum > 2:
+                    sma_color = "🟢"
+                elif sma_momentum > 0:
+                    sma_color = "🟡"
+                else:
+                    sma_color = "🔴"
+
+                # Compact header for expander
+                volume_m = row['avg_volume'] / 1000000
+                header = f"{rank_icon} {row['symbol']} - ⭐{row['profitability_score']:.2f} | 💰${row['close_price']:.2f} | {rsi_color}RSI+{rsi_momentum:.1f} | {sma_color}SMA+{sma_momentum:.1f} | 📊{volume_m:.1f}M"
+
+                with st.expander(header, expanded=(i < 3)):  # Top 3 expanded by default
+                    col1, col2, col3 = st.columns([2, 3, 2])
+
+                    with col1:
+                        st.markdown(f"### {rank_text}")
+                        st.markdown(f"**💰 Harga:** ${row['close_price']:.2f}")
+
+                        # TradingView links
+                        interval_map = {'1h': '60', '4h': '240', '1d': 'D', '1W': 'W'}
+                        tv_interval = interval_map.get(timeframe, 'D')
+                        nasdaq_url = f"https://www.tradingview.com/chart/?symbol=NASDAQ:{row['symbol']}&interval={tv_interval}"
+                        nyse_url = f"https://www.tradingview.com/chart/?symbol=NYSE:{row['symbol']}&interval={tv_interval}"
+
+                        st.markdown(f"[📈 NASDAQ]({nasdaq_url}) | [📊 NYSE]({nyse_url})")
+
+                        # Score breakdown
+                        st.markdown("**📊 Score Detail:**")
+                        st.markdown(f"• Momentum: {row['momentum_score']:.2f}")
+                        st.markdown(f"• Volume: {row['volume_score']:.2f}")
+                        st.markdown(f"• Market Cap: {row['market_cap_score']:.2f}")
+
+                    with col2:
+                        st.markdown("**📈 Momentum RSI:**")
+                        st.markdown(f"{rsi_color} **+{rsi_momentum:.2f}**")
+                        st.markdown(f"Saat ini: {row['rsi_current_avg']:.1f} | Lalu: {row['rsi_prev_avg']:.1f}")
+
+                        st.markdown("**📊 Momentum SMA:**")
+                        st.markdown(f"{sma_color} **+{sma_momentum:.2f}**")
+                        st.markdown(f"Saat ini: {row['sma_current_avg']:.2f} | Lalu: {row['sma_prev_avg']:.2f}")
+
+                    with col3:
+                        volume_m = row['avg_volume'] / 1000000
+                        market_cap_b = row['market_cap'] / 1000000000
+
+                        st.markdown("**📊 Volume Harian:**")
+                        st.markdown(f"**{volume_m:.1f}M** saham")
+
+                        st.markdown("**🏢 Market Cap:**")
+                        st.markdown(f"**${market_cap_b:.1f}B**")
+
+                        # Liquidity indicator
+                        if volume_m > 10:
+                            st.markdown("💧 **Sangat Likuid**")
+                        elif volume_m > 5:
+                            st.markdown("💧 **Cukup Likuid**")
+                        else:
+                            st.markdown("💧 **Kurang Likuid**")
+
+            # Show remaining stocks with expandable details (same format as top 5)
+            if len(df) > top_n:
+                st.markdown("---")
+                st.subheader(f"📋 Ranking #{top_n+1} - #{len(df)} (Detail Tersedia)")
+
+                for i in range(top_n, len(df)):
+                    row = df.iloc[i]
+
+                    # Ranking for remaining stocks
+                    rank_icon = f"#{i+1}"
+                    rank_text = f"RANK {i+1}"
+
+                    # Momentum color coding for quick view
+                    rsi_momentum = row['rsi_momentum']
+                    sma_momentum = row['sma_momentum']
+
+                    if rsi_momentum > 5:
+                        rsi_color = "🟢"
+                    elif rsi_momentum > 0:
+                        rsi_color = "🟡"
+                    else:
+                        rsi_color = "🔴"
+
+                    if sma_momentum > 2:
+                        sma_color = "🟢"
+                    elif sma_momentum > 0:
+                        sma_color = "🟡"
+                    else:
+                        sma_color = "🔴"
+
+                    volume_m = row['avg_volume'] / 1000000
+
+                    # Compact header for expander (same format as top 5)
+                    header = f"{rank_icon} {row['symbol']} - ⭐{row['profitability_score']:.2f} | 💰${row['close_price']:.2f} | {rsi_color}RSI+{rsi_momentum:.1f} | {sma_color}SMA+{sma_momentum:.1f} | 📊{volume_m:.1f}M"
+
+                    with st.expander(header, expanded=False):  # All collapsed by default for lower rankings
+                        col1, col2, col3 = st.columns([2, 3, 2])
+
+                        with col1:
+                            st.markdown(f"### {rank_text}")
+                            st.markdown(f"**💰 Harga:** ${row['close_price']:.2f}")
+
+                            # TradingView links
+                            interval_map = {'1h': '60', '4h': '240', '1d': 'D', '1W': 'W'}
+                            tv_interval = interval_map.get(timeframe, 'D')
+                            nasdaq_url = f"https://www.tradingview.com/chart/?symbol=NASDAQ:{row['symbol']}&interval={tv_interval}"
+                            nyse_url = f"https://www.tradingview.com/chart/?symbol=NYSE:{row['symbol']}&interval={tv_interval}"
+
+                            st.markdown(f"[📈 NASDAQ]({nasdaq_url}) | [📊 NYSE]({nyse_url})")
+
+                            # Score breakdown
+                            st.markdown("**📊 Score Detail:**")
+                            st.markdown(f"• Momentum: {row['momentum_score']:.2f}")
+                            st.markdown(f"• Volume: {row['volume_score']:.2f}")
+                            st.markdown(f"• Market Cap: {row['market_cap_score']:.2f}")
+
+                        with col2:
+                            st.markdown("**📈 Momentum RSI:**")
+                            st.markdown(f"{rsi_color} **+{rsi_momentum:.2f}**")
+                            st.markdown(f"Saat ini: {row['rsi_current_avg']:.1f} | Lalu: {row['rsi_prev_avg']:.1f}")
+
+                            st.markdown("**📊 Momentum SMA:**")
+                            st.markdown(f"{sma_color} **+{sma_momentum:.2f}**")
+                            st.markdown(f"Saat ini: {row['sma_current_avg']:.2f} | Lalu: {row['sma_prev_avg']:.2f}")
+
+                        with col3:
+                            volume_m = row['avg_volume'] / 1000000
+                            market_cap_b = row['market_cap'] / 1000000000
+
+                            st.markdown("**📊 Volume Harian:**")
+                            st.markdown(f"**{volume_m:.1f}M** saham")
+
+                            st.markdown("**🏢 Market Cap:**")
+                            st.markdown(f"**${market_cap_b:.1f}B**")
+
+                            # Liquidity indicator
+                            if volume_m > 10:
+                                st.markdown("💧 **Sangat Likuid**")
+                            elif volume_m > 5:
+                                st.markdown("💧 **Cukup Likuid**")
+                            else:
+                                st.markdown("💧 **Kurang Likuid**")
+
+            # Optional: Show detailed table (collapsed by default)
+            with st.expander("📋 Lihat Tabel Detail Lengkap"):
+                # Display results with momentum data
+                display_df = df[['symbol', 'rsi_current_avg', 'rsi_prev_avg', 'rsi_momentum',
+                               'sma_current_avg', 'sma_prev_avg', 'sma_momentum', 'close_price',
+                               'avg_volume', 'market_cap', 'timeframe']].copy()
+                display_df.columns = ['Symbol', 'RSI Saat Ini', 'RSI 7 Hari Lalu', '📈 Momentum RSI',
+                                    'SMA Saat Ini', 'SMA 7 Hari Lalu', '📈 Momentum SMA', '💰 Harga',
+                                    '📊 Volume', '🏢 Market Cap', '⏰ Timeframe']
+
+                # Format numbers
+                for col in ['RSI Saat Ini', 'RSI 7 Hari Lalu', '📈 Momentum RSI', 'SMA Saat Ini', 'SMA 7 Hari Lalu', '📈 Momentum SMA', '💰 Harga']:
+                    display_df[col] = display_df[col].round(2)
+
+                # Format volume (in millions)
+                display_df['📊 Volume'] = (display_df['📊 Volume'] / 1000000).round(1).astype(str) + 'M'
+
+                # Format market cap (in billions)
+                display_df['🏢 Market Cap'] = (display_df['🏢 Market Cap'] / 1000000000).round(1).astype(str) + 'B'
+
+                st.dataframe(display_df, use_container_width=True)
+
+        else:
+            st.warning("⚠️ Tidak ada saham yang memenuhi kriteria momentum saat ini.")
+
+
+
+# Footer
+st.markdown("---")
+st.markdown("*💡 Tips: Gunakan timeframe harian (1d) untuk sinyal yang lebih reliable. Pastikan koneksi internet stabil untuk mengambil data real-time.*")
