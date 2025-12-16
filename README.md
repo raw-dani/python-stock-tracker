@@ -14,21 +14,44 @@ Aplikasi desktop sederhana untuk menemukan saham NASDAQ dengan momentum RSI bull
 
 ## Persyaratan Sistem
 
-- Python 3.8 atau lebih baru
+- Python 3.8 atau lebih baru (recommended: 3.8-3.12)
 - Koneksi internet untuk mengambil data saham
 - RAM minimal 4GB (untuk processing banyak saham)
 
+## 🌐 Live Demo
+Aplikasi dapat diakses di: **https://signal.pemain12.com**
+
+**Fitur Live Demo:**
+- ✅ Stock Screening NASDAQ dengan momentum RSI
+- ✅ Multi-Cryptocurrency analysis (20+ crypto)
+- ✅ Advanced caching & rate limiting
+- ✅ Real-time data dari Yahoo Finance & CoinGecko
+- ✅ SSL encryption dengan Let's Encrypt
+
 ## Instalasi
 
-### 1. Clone atau Download Project
+### **Opsi 1: Docker (Recommended untuk Production)**
+
+Lihat tutorial lengkap di [`DOCKER_README.md`](DOCKER_README.md)
+
+```bash
+# Quick start dengan Docker
+git clone https://github.com/raw-dani/python-stock-tracker.git
+cd python-stock-tracker
+./run_docker.sh
+```
+
+### **Opsi 2: Manual Installation**
+
+#### 1. Clone atau Download Project
 
 ```bash
 # Jika menggunakan git
-git clone <repository-url>
-cd saham-screening
+git clone https://github.com/raw-dani/python-stock-tracker.git
+cd python-stock-tracker
 ```
 
-### 2. Install Dependencies
+#### 2. Install Dependencies
 
 ```bash
 pip install -r requirements.txt
@@ -210,19 +233,29 @@ Tutup aplikasi dan jalankan ulang, atau hapus file `stock_data.db` jika corrupt.
 - **Momentum 7 hari** adalah default yang balanced
 - **RSI period 14** dan **SMA period 14** adalah standard
 
-##  Struktur File
+## 📂 Struktur File
 
 ```
 saham-screening/
-├── app.py              # 🎨 Main Streamlit application (UI sederhana)
-├── utils.py            # 🔧 Core logic: RSI/SMA momentum calculation
-├── db.py               # 💾 Database operations (SQLite)
-├── launcher.py         # 🚀 Desktop app launcher
-├── build_exe.py        # 📦 Script to build executable
-├── test_momentum.py    # 🧪 Test script for momentum logic
-├── requirements.txt    # 📋 Python dependencies
-├── README.md           # 📖 This documentation
-└── stock_data.db       # 💽 SQLite database (auto-created)
+├── app.py                    # 🎨 Main Streamlit application (UI lengkap)
+├── utils.py                  # 🔧 Stock API functions with advanced caching
+├── crypto_utils.py           # ₿ Crypto API functions with batch processing
+├── db.py                     # 💾 Database operations (SQLite)
+├── launcher.py               # 🚀 Desktop app launcher
+├── build_exe.py              # 📦 Script to build executable
+├── test_momentum.py          # 🧪 Core logic test (kept for validation)
+├── requirements.txt          # 📋 Python dependencies
+├── Dockerfile                # 🐳 Docker container config
+├── docker-compose.yml        # 🐳 Docker Compose config
+├── run_docker.sh             # 🚀 Docker deployment script
+├── .dockerignore             # 🚫 Docker ignore rules
+├── CYBERPANEL_SIGNAL_TUTORIAL.md  # 📚 CyberPanel deployment guide
+├── DOCKER_README.md          # 📖 Docker deployment guide
+├── README.md                 # 📖 This documentation
+├── stock_data.db             # 💽 SQLite database (auto-created)
+├── data/                     # 💾 Persistent data directory
+├── .cache/                   # ⚡ API cache directory
+└── logs/                     # 📝 Application logs
 ```
 
 ## 📚 API Reference

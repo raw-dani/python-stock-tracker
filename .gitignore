@@ -143,3 +143,11 @@ Thumbs.db
 *.tmp
 *.temp
 .cache/
+
+# Django Signal Project (excluded from main repo)
+django_signal/
+
+# CyberPanel Tutorial Files (excluded from main repo)
+CYBERPANEL_DJANGO_SIGNAL_TUTORIAL.md
+CYBERPANEL_SIGNAL_TUTORIAL.md
+DOCKER_README.md

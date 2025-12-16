@@ -1,0 +1,18 @@
+version: '2.4'
+
+services:
+  stock-screening-app:
+    build: .
+    container_name: signal-pemain12-app
+    ports:
+      - "8503:8503"  # Map container port 8503 to host port 8503 (for signal.pemain12.com)
+    volumes:
+      - ./data:/app/data  # Persist database and data
+      - ./.cache:/app/.cache  # Cache directory for API optimization
+    environment:
+      - PYTHONUNBUFFERED=1
+      - STREAMLIT_SERVER_HEADLESS=true
+      - STREAMLIT_SERVER_PORT=8503
+      - STREAMLIT_SERVER_ADDRESS=0.0.0.0
+      - STREAMLIT_BROWSER_GATHER_USAGE_STATS=false
+    restart: always

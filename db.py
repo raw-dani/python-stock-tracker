@@ -40,6 +40,44 @@ def init_db():
         )
     ''')
 
+    # Table for crypto historical data
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS crypto_data (
+            id INTEGER PRIMARY KEY,
+            symbol TEXT,
+            date TEXT,
+            open REAL,
+            high REAL,
+            low REAL,
+            close REAL,
+            volume INTEGER,
+            market_cap REAL,
+            UNIQUE(symbol, date)
+        )
+    ''')
+
+    # Table for crypto screening results
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS crypto_screening_results (
+            id INTEGER PRIMARY KEY,
+            symbol TEXT,
+            signal TEXT,
+            score REAL,
+            rsi_momentum REAL,
+            sma_momentum REAL,
+            rsi_current_avg REAL,
+            rsi_prev_avg REAL,
+            sma_current_avg REAL,
+            sma_prev_avg REAL,
+            current_price REAL,
+            avg_volume REAL,
+            market_cap REAL,
+            timeframe TEXT,
+            analysis_period INTEGER,
+            timestamp TEXT
+        )
+    ''')
+
     # Check and add missing columns
     cursor.execute("PRAGMA table_info(screening_results)")
     columns = [col[1] for col in cursor.fetchall()]
@@ -184,6 +222,120 @@ def clear_screening_results():
     conn = sqlite3.connect('stock_data.db')
     cursor = conn.cursor()
     cursor.execute('DELETE FROM screening_results')
+    conn.commit()
+    conn.close()
+
+def save_crypto_data(symbol, data):
+    """
+    Save crypto data to database.
+    :param symbol: Crypto symbol (e.g., 'BTC')
+    :param data: Pandas DataFrame with OHLCV data
+    """
+    conn = sqlite3.connect('stock_data.db')
+    data_copy = data.copy()
+
+    # Flatten MultiIndex columns if present
+    if isinstance(data_copy.columns, pd.MultiIndex):
+        data_copy.columns = data_copy.columns.droplevel(1)
+
+    data_copy.columns = data_copy.columns.str.lower()
+    data_copy['symbol'] = symbol
+    data_copy.reset_index(inplace=True)
+
+    # Rename date column
+    if 'Date' in data_copy.columns:
+        data_copy.rename(columns={'Date': 'date'}, inplace=True)
+
+    data_copy['date'] = pd.to_datetime(data_copy['date']).dt.strftime('%Y-%m-%d %H:%M:%S')
+    data_copy.to_sql('crypto_data', conn, if_exists='append', index=False)
+    conn.close()
+
+def load_crypto_data(symbol):
+    """
+    Load crypto data from database.
+    :param symbol: Crypto symbol
+    :return: Pandas DataFrame
+    """
+    conn = sqlite3.connect('stock_data.db')
+    query = f"SELECT * FROM crypto_data WHERE symbol = '{symbol}'"
+    data = pd.read_sql_query(query, conn)
+    conn.close()
+    if not data.empty:
+        data.set_index('date', inplace=True)
+        data.index = pd.to_datetime(data.index)
+    return data
+
+def save_crypto_screening_results(results):
+    """
+    Save crypto screening results to database.
+    :param results: List of dicts with crypto analysis results
+    """
+    if not results:
+        return
+
+    conn = sqlite3.connect('stock_data.db')
+    cursor = conn.cursor()
+
+    # Insert data
+    for result in results:
+        data = {
+            'symbol': result.get('symbol', ''),
+            'signal': result.get('signal', ''),
+            'score': result.get('score', 0),
+            'rsi_momentum': result.get('rsi_momentum', 0),
+            'sma_momentum': result.get('sma_momentum', 0),
+            'rsi_current_avg': result.get('rsi_current_avg', 0),
+            'rsi_prev_avg': result.get('rsi_prev_avg', 0),
+            'sma_current_avg': result.get('sma_current_avg', 0),
+            'sma_prev_avg': result.get('sma_prev_avg', 0),
+            'current_price': result.get('current_price', 0),
+            'avg_volume': result.get('avg_volume', 0),
+            'market_cap': result.get('market_cap', 0),
+            'timeframe': result.get('timeframe', ''),
+            'analysis_period': result.get('analysis_period', 7),
+            'timestamp': result.get('timestamp', datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+        }
+
+        placeholders = ', '.join(['?' for _ in data])
+        columns_str = ', '.join(data.keys())
+        values = tuple(data.values())
+
+        cursor.execute(f'''
+            INSERT OR REPLACE INTO crypto_screening_results ({columns_str})
+            VALUES ({placeholders})
+        ''', values)
+
+    conn.commit()
+    conn.close()
+
+def load_crypto_screening_results():
+    """
+    Load latest crypto screening results.
+    :return: Pandas DataFrame
+    """
+    conn = sqlite3.connect('stock_data.db')
+    query = "SELECT * FROM crypto_screening_results ORDER BY timestamp DESC LIMIT 50"
+    data = pd.read_sql_query(query, conn)
+    conn.close()
+    return data
+
+def clear_crypto_data():
+    """
+    Clear all crypto data from database.
+    """
+    conn = sqlite3.connect('stock_data.db')
+    cursor = conn.cursor()
+    cursor.execute('DELETE FROM crypto_data')
+    conn.commit()
+    conn.close()
+
+def clear_crypto_screening_results():
+    """
+    Clear all crypto screening results from database.
+    """
+    conn = sqlite3.connect('stock_data.db')
+    cursor = conn.cursor()
+    cursor.execute('DELETE FROM crypto_screening_results')
     conn.commit()
     conn.close()
 
