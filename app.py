@@ -474,8 +474,7 @@ with tab_stocks:
                             st.markdown(f"• Momentum: {row['momentum_score']:.2f}")
                             st.markdown(f"• Volume: {row['volume_score']:.2f}")
                             st.markdown(f"• Market Cap: {row['market_cap_score']:.2f}")
-                            st.markdown(f"• STOCH RSI: {row.get('stoch_score', 0):.2f}")
-                            st.markdown(f"• STOCH RSI: {row.get('stoch_score', 0):.2f}")
+                            st.markdown(f"• STOCH RSI: {row.get('stoch_score', 0):.2f}")                            
 
                         with col2:
                             st.markdown("**📈 Momentum RSI:**")
@@ -504,25 +503,7 @@ with tab_stocks:
                                 st.markdown(f"🟡 **HOLD** - STOCH RSI netral")
                                 if stoch_current:
                                     st.markdown(f"Saat ini: {stoch_current:.1f}")
-
-                            st.markdown("**🎯 STOCH RSI Signal:**")
-                            stoch_signal = row.get('stoch_signal', 'HOLD')
-                            stoch_current = row.get('stoch_current')
-                            stoch_avg_oversold = row.get('stoch_avg_oversold')
-                            stoch_avg_overbought = row.get('stoch_avg_overbought')
-
-                            if stoch_signal == "BUY":
-                                st.markdown(f"🟢 **BUY** - STOCH RSI keluar dari area oversold")
-                                if stoch_current and stoch_avg_oversold:
-                                    st.markdown(f"Saat ini: {stoch_current:.1f} > Oversold avg: {stoch_avg_oversold:.1f}")
-                            elif stoch_signal == "SELL":
-                                st.markdown(f"🔴 **SELL** - STOCH RSI masuk area overbought")
-                                if stoch_current and stoch_avg_overbought:
-                                    st.markdown(f"Saat ini: {stoch_current:.1f} < Overbought avg: {stoch_avg_overbought:.1f}")
-                            else:
-                                st.markdown(f"🟡 **HOLD** - STOCH RSI netral")
-                                if stoch_current:
-                                    st.markdown(f"Saat ini: {stoch_current:.1f}")
+                           
 
                         with col3:
                             volume_m = row['avg_volume'] / 1000000
@@ -615,6 +596,25 @@ with tab_stocks:
                                 st.markdown("**📊 Momentum SMA:**")
                                 st.markdown(f"{sma_color} **+{sma_momentum:.2f}**")
                                 st.markdown(f"Saat ini: {row['sma_current_avg']:.2f} | Lalu: {row['sma_prev_avg']:.2f}")
+
+                                st.markdown("**🎯 STOCH RSI Signal:**")
+                                stoch_signal = row.get('stoch_signal', 'HOLD')
+                                stoch_current = row.get('stoch_current')
+                                stoch_avg_oversold = row.get('stoch_avg_oversold')
+                                stoch_avg_overbought = row.get('stoch_avg_overbought')
+
+                                if stoch_signal == "BUY":
+                                    st.markdown(f"🟢 **BUY** - STOCH RSI keluar dari area oversold")
+                                    if stoch_current and stoch_avg_oversold:
+                                        st.markdown(f"Saat ini: {stoch_current:.1f} > Oversold avg: {stoch_avg_oversold:.1f}")
+                                elif stoch_signal == "SELL":
+                                    st.markdown(f"🔴 **SELL** - STOCH RSI masuk area overbought")
+                                    if stoch_current and stoch_avg_overbought:
+                                        st.markdown(f"Saat ini: {stoch_current:.1f} < Overbought avg: {stoch_avg_overbought:.1f}")
+                                else:
+                                    st.markdown(f"🟡 **HOLD** - STOCH RSI netral")
+                                    if stoch_current:
+                                        st.markdown(f"Saat ini: {stoch_current:.1f}")
 
                             with col3:
                                 volume_m = row['avg_volume'] / 1000000
