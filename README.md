@@ -1,313 +1,295 @@
-# 📈 Screening Saham NASDAQ - RSI Momentum
+# 📈📊 Multi-Asset Screening Dashboard - RSI + STOCH RSI Momentum
 
-Aplikasi desktop sederhana untuk menemukan saham NASDAQ dengan momentum RSI bullish menggunakan Streamlit.
+Aplikasi desktop canggih untuk screening saham NASDAQ dan cryptocurrency dengan **multi-indikator analysis** menggunakan Streamlit. Menggabungkan RSI, SMA, dan STOCH RSI untuk sinyal trading yang lebih akurat.
 
 ## ✨ Fitur Utama
 
-- **🎯 Screening RSI Momentum**: Filter saham berdasarkan peningkatan rata-rata RSI 7 hari terakhir vs sebelumnya
-- **📊 Dual Momentum Check**: Kombinasi RSI momentum + SMA momentum untuk sinyal yang lebih akurat
-- **⚡ Real-time Data**: Menggunakan data langsung dari Yahoo Finance
-- **🎨 Interface Sederhana**: UI yang user-friendly dengan emoji dan layout yang intuitif
-- **💾 Database Caching**: Simpan data historis untuk performa optimal
-- **🔗 TradingView Integration**: Link langsung ke chart NASDAQ & NYSE dengan timeframe sesuai
-- **📱 Desktop App**: Jalankan sebagai aplikasi standalone tanpa browser
+### 📈 **Stock Screening (NASDAQ)**
+- **🎯 Multi-Indicator Analysis**: RSI + SMA + STOCH RSI momentum
+- **📊 STOCH RSI Signals**: BUY/SELL/HOLD berdasarkan area oversold/overbought
+- **🏆 Profitability Ranking**: Scoring sistem dengan bobot 50% momentum, 25% volume, 25% market cap
+- **⚡ Real-time Data**: Yahoo Finance API dengan advanced caching
+- **🔗 TradingView Integration**: Link langsung ke chart dengan timeframe sesuai
 
-## Persyaratan Sistem
+### ₿ **Crypto Screening**
+- **🎯 Multi-Cryptocurrency**: 20+ cryptocurrency terbesar (BTC, ETH, SOL, dll)
+- **📊 STOCH RSI Analysis**: Stochastic RSI untuk sinyal crypto
+- **🔄 Batch Processing**: Optimasi API calls dengan market cap batch fetching
+- **💰 Real-time Prices**: CoinGecko API integration
 
-- Python 3.8 atau lebih baru (recommended: 3.8-3.12)
-- Koneksi internet untuk mengambil data saham
-- RAM minimal 4GB (untuk processing banyak saham)
+### 🛠️ **System Features**
+- **🚀 Smart Launcher**: Auto-setup, port management, dependency check
+- **💾 Advanced Caching**: Multi-layer caching (memory + disk + database)
+- **🎨 Professional UI**: Responsive design dengan signal explanations
+- **📱 Desktop App**: Standalone executable tanpa browser dependency
+- **🔒 Security**: Rate limiting, error handling, data validation
 
-## 🌐 Live Demo
-Aplikasi dapat diakses di: **https://signal.pemain12.com**
+## 💻 Persyaratan Sistem
 
-**Fitur Live Demo:**
-- ✅ Stock Screening NASDAQ dengan momentum RSI
-- ✅ Multi-Cryptocurrency analysis (20+ crypto)
-- ✅ Advanced caching & rate limiting
-- ✅ Real-time data dari Yahoo Finance & CoinGecko
-- ✅ SSL encryption dengan Let's Encrypt
+- **Python**: 3.8 - 3.12 (recommended: 3.9+)
+- **RAM**: Minimal 4GB untuk processing data
+- **Storage**: 500MB free space
+- **Internet**: Required untuk real-time data fetching
+- **OS**: Windows 10+, macOS 10.15+, Linux Ubuntu 18.04+
 
-## Instalasi
+## 🚀 Quick Start (3 Langkah Saja!)
 
-### **Opsi 1: Docker (Recommended untuk Production)**
-
-Lihat tutorial lengkap di [`DOCKER_README.md`](DOCKER_README.md)
-
+### **1. Download & Setup**
 ```bash
-# Quick start dengan Docker
-git clone https://github.com/raw-dani/python-stock-tracker.git
-cd python-stock-tracker
-./run_docker.sh
-```
-
-### **Opsi 2: Manual Installation**
-
-#### 1. Clone atau Download Project
-
-```bash
-# Jika menggunakan git
 git clone https://github.com/raw-dani/python-stock-tracker.git
 cd python-stock-tracker
 ```
 
-#### 2. Install Dependencies
+### **2. Jalankan Launcher (Otomatis Setup)**
+```bash
+python launcher.py
+```
+
+**Yang terjadi otomatis:**
+- ✅ Check Python version & dependencies
+- ✅ Auto-install missing packages
+- ✅ Kill port conflicts jika ada
+- ✅ Launch aplikasi dengan browser
+
+### **3. Mulai Screening!**
+Aplikasi terbuka otomatis di browser dengan interface lengkap untuk stock & crypto screening.
+
+## 🐳 Docker Deployment (Opsional)
+
+Untuk production deployment, gunakan Docker:
 
 ```bash
-pip install -r requirements.txt
+# Build & run dengan Docker Compose
+docker-compose up --build -d
+
+# Aplikasi akan berjalan di http://localhost:8501
 ```
 
 ## 📦 Dependencies
 
+Aplikasi menggunakan dependencies berikut (auto-installed oleh launcher):
+
 ```txt
-streamlit==1.28.1          # Web app framework
-yfinance==0.2.28           # Yahoo Finance data
-pandas==1.5.3              # Data manipulation
-numpy==1.24.3              # Numerical computing
-pyinstaller==6.3.0         # Build executable
+streamlit>=1.28.0          # Web app framework
+yfinance>=0.2.28           # Yahoo Finance API
+pandas>=1.5.0              # Data manipulation
+numpy>=1.24.0              # Numerical computing
+requests>=2.31.0           # HTTP requests for CoinGecko
+plotly>=5.15.0             # Charts (optional)
 ```
 
-**Install semua dependencies:**
-```bash
-pip install -r requirements.txt
-```
-
-### 3. Jalankan Aplikasi
-
-```bash
-streamlit run app.py
-```
-
-### 4. Jalankan sebagai Desktop App (Alternatif)
-
-Untuk menjalankan sebagai aplikasi desktop standalone:
-
-```bash
-python launcher.py
-```
-
-Aplikasi akan membuka browser otomatis dengan interface desktop.
-
-#### Membuat Executable untuk Distribusi
-
-```bash
-# Install PyInstaller
-pip install pyinstaller
-
-# Build executable
-python build_exe.py
-```
-
-File `SahamScreeningApp.exe` akan dibuat di folder `dist/`. File ini bisa didistribusikan dan dijalankan tanpa install Python.
-
-Aplikasi akan terbuka di browser pada `http://localhost:8503`
+**Note**: Launcher akan otomatis install semua dependencies jika belum ada.
 
 ## 🚀 Cara Penggunaan
 
-### 1. Jalankan Aplikasi
-
-**Desktop App (Recommended):**
+### **1. Jalankan Aplikasi (Super Simple!)**
 ```bash
 python launcher.py
 ```
 
-**Web App:**
-```bash
-streamlit run app.py
+**Yang terjadi otomatis:**
+- ✅ System requirements check
+- ✅ Auto-install dependencies
+- ✅ Port conflict resolution
+- ✅ Browser auto-launch
+
+### **2. Pilih Asset Type**
+
+Aplikasi memiliki **2 tab utama**:
+
+#### 📈 **Tab 1: Stock Screening (NASDAQ)**
+- Screening saham NASDAQ dengan multi-indikator
+- RSI + SMA + STOCH RSI momentum analysis
+- Profitability ranking dengan STOCH signals
+
+#### ₿ **Tab 2: Crypto Screening**
+- Multi-cryptocurrency analysis (20+ coins)
+- STOCH RSI untuk crypto signals
+- Batch processing untuk performance
+
+### **3. Konfigurasi Parameter**
+
+#### **Stock Parameters:**
+- **⏰ Timeframe**: 1h, 4h, 1d, 1W (recommended: 1d)
+- **📊 RSI Period**: 14 (standard)
+- **📈 SMA Period**: 14 (standard)
+- **📅 Momentum Days**: 7 (balanced period)
+- **📊 Min Volume**: 1M+ (liquidity filter)
+- **💰 Min Market Cap**: $1B+ (size filter)
+
+#### **Crypto Parameters:**
+- **⏰ Timeframe**: 15m, 1h, 4h, 1d, 1W
+- **📅 Analysis Period**: 7-90 days
+- **Multi-select**: Pilih hingga 10 cryptocurrency
+
+### **4. Jalankan Screening**
+
+Klik **"🚀 Jalankan Screening Momentum"** untuk stocks atau **"🚀 Analisis Cryptocurrency Momentum"** untuk crypto.
+
+### **5. Interpretasi Hasil**
+
+#### **🏆 Ranking System (Stocks):**
 ```
-
-### 2. Konfigurasi Parameter
-
-- **⏰ Timeframe**: Pilih interval data (1h, 4h, 1d, 1W) - default 1d untuk sinyal yang lebih reliable
-- **📊 Panjang RSI**: Periode perhitungan RSI (default: 14)
-- **📈 Panjang SMA**: Periode perhitungan SMA (default: 14)
-- **📅 Hari Momentum**: Jumlah hari untuk perbandingan momentum (default: 7)
-
-### 3. Tambah Saham Custom (Opsional)
-
-Masukkan simbol saham tambahan di field "Saham Tambahan":
-```
-TSLA,GOOGL,NFLX
-```
-
-### 4. Jalankan Screening
-
-Klik tombol **"🚀 Jalankan Screening Momentum"** untuk memulai analisis.
-
-### 5. Konfigurasi Filter
-
-- **📊 Min Volume Harian**: Minimum volume perdagangan harian (dalam jutaan saham)
-- **💰 Min Kapitalisasi Pasar**: Minimum market cap perusahaan (100M - 50B USD)
-
-### 6. Interpretasi Hasil
-
-Aplikasi akan menampilkan saham yang memenuhi **EMPAT kondisi** dan **diurutkan berdasarkan profitabilitas**:
-
-#### ✅ Kriteria Screening:
-- **RSI Momentum**: Rata-rata RSI 7 hari terakhir > sebelumnya
-- **SMA Momentum**: Rata-rata SMA 7 hari terakhir > sebelumnya
-- **Volume Minimum**: Volume harian > threshold yang dipilih
-- **Market Cap Minimum**: Kapitalisasi pasar > threshold yang dipilih
-
-#### 🏆 Sistem Ranking Profitabilitas:
-Hasil diurutkan berdasarkan **Skor Profitabilitas** (0-1.00):
-
-```
-Profitability Score = (Momentum × 60%) + (Volume × 30%) + (Market Cap × 10%)
+Profitability Score = (Momentum × 50%) + (Volume × 25%) + (Market Cap × 5%) + (STOCH RSI × 20%)
 
 Dimana:
 - Momentum = (RSI_momentum + SMA_momentum) ÷ 2
-- Volume = min(Volume_M / 10M, 1.0)  [capped at 10M volume]
-- Market Cap = min(Market_Cap_B / 100B, 1.0)  [capped at $100B]
+- STOCH RSI = BUY(+1), HOLD(0), SELL(-1)
+- Volume & Market Cap = Normalized scores
 ```
 
-#### 🥇 Format Tampilan:
-- **🥇🥈🥉 Medali**: Untuk 3 ranking teratas
-- **⭐ Skor Profitabilitas**: Total score 0-1.00
-- **📊 Tampilan Expandable**: Semua saham bisa di-expand untuk detail lengkap
-- **🔍 Expander**: Top 3 terbuka otomatis, sisanya bisa diklik untuk detail
+#### **📊 STOCH RSI Signals:**
+- **🟢 BUY**: STOCH RSI keluar dari area oversold (< 20)
+- **🔴 SELL**: STOCH RSI masuk area overbought (> 80)
+- **🟡 HOLD**: STOCH RSI netral
 
-### 6. Format Tampilan Hasil
-
-Aplikasi menampilkan hasil dalam **format card yang mudah dibaca**:
-
-#### 📊 **Ringkasan Visual per Saham:**
-- **🟢/🟡/🔴 Indikator Momentum**: Warna menunjukkan kekuatan momentum
-- **📈 RSI Momentum**: Perbandingan rata-rata 7 hari terakhir vs sebelumnya
-- **📊 SMA Momentum**: Perbandingan rata-rata trend 7 hari
-- **💰 Harga**: Harga penutupan real-time
-- **💧 Likuiditas**: Indikator volume perdagangan
-- **🔗 TradingView**: Link langsung ke chart
-
-#### 📋 **Tabel Detail Lengkap (Opsional):**
-Tersedia dalam expander untuk melihat semua data teknikal lengkap dengan format tabel tradisional.
-
-## Pengelolaan Data
-
-### Hapus Data Saham
-Menghapus semua data historis saham dari database.
-
-### Hapus Hasil Screening
-Menghapus semua hasil screening yang tersimpan.
-
-## Arsitektur Aplikasi
-
-```
-User Interface (Streamlit)
-    ↓
-Business Logic (Python)
-    ↓
-Data Fetching (yfinance)
-    ↓
-Indicator Calculation (TA-Lib)
-    ↓
-Database (SQLite)
-```
+#### **🥇 Display Format:**
+- **Medali ranking** untuk top 3
+- **Expandable cards** dengan detail lengkap
+- **TradingView links** untuk chart analysis
+- **Signal explanations** dengan reasoning
 
 ## 🔧 Troubleshooting
 
-### ❌ Error: Module not found
+### **🚨 Port 8501 Already in Use**
 ```bash
+# Launcher akan auto-detect dan offer kill process
+python launcher.py
+# Pilih 'y' untuk kill process yang menggunakan port
+```
+
+### **📦 Missing Dependencies**
+```bash
+# Launcher auto-install, atau manual:
 pip install -r requirements.txt
 ```
 
-### ❌ Error: No data found for symbol
-Saham mungkin delisted atau simbol tidak valid. Cek di Yahoo Finance atau gunakan simbol yang valid.
+### **🌐 No Internet Connection**
+- Aplikasi membutuhkan internet untuk data real-time
+- Pastikan koneksi stabil untuk Yahoo Finance & CoinGecko
 
-### ❌ Error: Database locked
-Tutup aplikasi dan jalankan ulang, atau hapus file `stock_data.db` jika corrupt.
+### **🐌 Slow Performance**
+- **Gunakan timeframe 1d** untuk hasil tercepat
+- **Kurangi jumlah symbols** untuk screening
+- **Data akan di-cache** setelah fetch pertama
 
-### ❌ Aplikasi lambat / Tidak ada hasil
-- **Cek koneksi internet** - aplikasi butuh koneksi untuk data real-time
-- **Gunakan timeframe 1d** - lebih cepat dan reliable
-- **Kurangi saham custom** - terlalu banyak saham membuat lambat
-- **Data akan di-cache** setelah pertama kali diambil
+### **💾 Database Issues**
+```bash
+# Hapus database jika corrupt
+rm stock_data.db
+# Launcher akan auto-create database baru
+```
 
-### ❌ Build executable gagal
-- Pastikan semua dependencies terinstall
-- Gunakan Python 3.12 untuk compatibility terbaik
-- Cek ruang disk yang cukup
+### **🐳 Docker Issues**
+```bash
+# Restart Docker service
+sudo systemctl restart docker
 
-### 💡 Tips Optimasi
-- **Timeframe 1d** memberikan sinyal yang lebih reliable
-- **Momentum 7 hari** adalah default yang balanced
-- **RSI period 14** dan **SMA period 14** adalah standard
+# Clean up containers
+docker system prune -f
+```
+
+### **💡 Performance Tips**
+- **Timeframe 1d**: Paling reliable untuk sinyal
+- **Momentum 7 hari**: Balanced analysis period
+- **STOCH RSI**: Tambahan konfirmasi untuk entry/exit
+- **Cache**: Data tersimpan untuk akses cepat berikutnya
 
 ## 📂 Struktur File
 
 ```
-saham-screening/
-├── app.py                    # 🎨 Main Streamlit application (UI lengkap)
-├── utils.py                  # 🔧 Stock API functions with advanced caching
-├── crypto_utils.py           # ₿ Crypto API functions with batch processing
-├── db.py                     # 💾 Database operations (SQLite)
-├── launcher.py               # 🚀 Desktop app launcher
-├── build_exe.py              # 📦 Script to build executable
-├── test_momentum.py          # 🧪 Core logic test (kept for validation)
-├── requirements.txt          # 📋 Python dependencies
+multi-asset-screening/
+├── app.py                    # 🎨 Main Streamlit UI (Stock + Crypto tabs)
+├── utils.py                  # 📈 Stock screening with RSI + SMA + STOCH RSI
+├── crypto_utils.py           # ₿ Crypto screening with STOCH RSI
+├── db.py                     # 💾 SQLite database operations
+├── launcher.py               # 🚀 Smart launcher with auto-setup
+├── requirements.txt          # 📦 Python dependencies
 ├── Dockerfile                # 🐳 Docker container config
-├── docker-compose.yml        # 🐳 Docker Compose config
+├── docker-compose.yml        # 🐳 Docker Compose for deployment
 ├── run_docker.sh             # 🚀 Docker deployment script
 ├── .dockerignore             # 🚫 Docker ignore rules
-├── CYBERPANEL_SIGNAL_TUTORIAL.md  # 📚 CyberPanel deployment guide
-├── DOCKER_README.md          # 📖 Docker deployment guide
+├── .gitignore               # 🚫 Git ignore rules
 ├── README.md                 # 📖 This documentation
 ├── stock_data.db             # 💽 SQLite database (auto-created)
-├── data/                     # 💾 Persistent data directory
-├── .cache/                   # ⚡ API cache directory
+├── .cache/                   # ⚡ API response cache
+├── data/                     # 💾 Persistent data storage
 └── logs/                     # 📝 Application logs
 ```
 
 ## 📚 API Reference
 
-### 🔧 utils.py - Core Functions
+### 🔧 **utils.py - Stock Screening Functions**
 
-#### `get_nasdaq_symbols()`
-Mengembalikan list ~100 simbol saham NASDAQ populer.
+#### `calculate_stoch_rsi(prices, rsi_period=14, stoch_period=14, smooth_k=3, smooth_d=3)`
+Menghitung Stochastic RSI dengan parameter (14,14,3,3).
 
-#### `fetch_stock_data(symbol, period='6mo', interval='1h')`
-Mengambil data historis real-time dari Yahoo Finance dengan caching.
+#### `analyze_stoch_signal(stoch_avg_series, n_candles=5)`
+Menganalisis sinyal BUY/SELL/HOLD berdasarkan area oversold/overbought.
 
-#### `calculate_indicators(data, rsi_period=14, sma_period=14)`
-Menghitung RSI dan SMA dari data OHLCV.
-
-#### `screen_stocks(symbols, interval='1h', criteria='rsi_momentum', rsi_period=14, sma_period=14, momentum_days=7, min_volume=1000000, min_market_cap=1000000000)`
-**Core function**: Screening saham berdasarkan momentum RSI + SMA dengan filter volume dan market cap.
+#### `screen_stocks(symbols, interval='1d', criteria='rsi_momentum', ...)`
+**Core function**: Multi-indicator stock screening dengan STOCH RSI.
 
 **Parameter:**
-- `symbols`: List simbol saham
-- `interval`: Timeframe ('1d', '4h', '1h', '1W')
-- `criteria`: 'rsi_momentum' (satu-satunya kriteria)
+- `symbols`: List simbol saham NASDAQ
+- `interval`: Timeframe ('1h', '4h', '1d', '1W')
 - `rsi_period`: Periode RSI (default: 14)
 - `sma_period`: Periode SMA (default: 14)
-- `momentum_days`: Hari untuk perbandingan momentum (default: 7)
-- `min_volume`: Minimum volume harian (default: 1M)
-- `min_market_cap`: Minimum market cap USD (default: 1B)
+- `momentum_days`: Periode analisis (default: 7)
+- `min_volume`: Filter volume minimum
+- `min_market_cap`: Filter market cap minimum
 
-**Return:** List dict dengan data momentum, volume, dan market cap.
+**Return:** List dict dengan RSI, SMA, STOCH signals, dan profitability score.
 
-### 💾 db.py - Database Operations
+### ₿ **crypto_utils.py - Crypto Screening Functions**
 
-#### `init_db()`
-Auto-create tabel dengan kolom momentum yang diperlukan.
+#### `calculate_stoch_rsi(prices, rsi_period=14, stoch_period=14, smooth_k=3, smooth_d=3)`
+Stochastic RSI calculation untuk cryptocurrency.
 
-#### `save_screening_results(results)`
-Simpan hasil screening dengan kolom momentum (RSI + SMA).
+#### `screen_multiple_cryptocurrencies(crypto_symbols, timeframe='1d', ...)`
+Batch screening multiple cryptocurrencies dengan STOCH RSI.
 
-#### `load_screening_results()`
-Load hasil screening terakhir dengan filter momentum.
+#### `get_crypto_price(symbol, period='60d', interval='1d')`
+Fetch crypto data dari Yahoo Finance dengan caching.
 
-## ⚖️ Disclaimer
+### 🚀 **launcher.py - Smart Launcher**
 
-**⚠️ PENTING:** Aplikasi ini untuk tujuan edukasi dan riset teknikal saja. **BUKAN** saran investasi. Selalu lakukan research sendiri dan konsultasi dengan financial advisor sebelum mengambil keputusan investasi.
+#### `check_system_requirements()`
+Auto-check Python version, dependencies, dan port availability.
 
-## 📞 Support
+#### `kill_process_on_port(port=8501)`
+Auto-detect dan kill process yang menggunakan port tertentu.
 
-Jika ada pertanyaan atau masalah:
-- Cek bagian Troubleshooting di atas
-- Pastikan semua dependencies terinstall dengan benar
-- Verifikasi koneksi internet untuk data real-time
+#### `get_process_using_port(port=8501)`
+Detect PID dari process yang menggunakan port.
+
+## ⚖️ Disclaimer & Risk Warning
+
+**⚠️ PENTING:** Aplikasi ini untuk tujuan edukasi dan riset teknikal saja. **BUKAN** saran investasi atau rekomendasi trading. Selalu lakukan research mendalam dan konsultasi dengan financial advisor sebelum mengambil keputusan investasi.
+
+**🔄 Market Risk:** Cryptocurrency dan saham memiliki volatilitas tinggi. STOCH RSI dan indikator teknikal lainnya tidak menjamin profit dan bisa memberikan sinyal yang salah.
+
+**📊 Educational Purpose Only:** Gunakan sebagai tools pembelajaran analisis teknikal, bukan sebagai sistem trading otomatis.
+
+## 📞 Support & Community
+
+### **🐛 Issues & Bug Reports**
+- GitHub Issues: Laporkan bug atau request fitur
+- Include: OS, Python version, error logs
+
+### **💬 Questions**
+- Cek Troubleshooting section di atas
+- Pastikan dependencies terinstall dengan benar
+- Verifikasi koneksi internet untuk API access
+
+### **🚀 Feature Requests**
+- STOCH RSI parameter customization
+- Additional technical indicators
+- More cryptocurrency support
+- Advanced charting features
 
 ---
 
-**🎯 Selamat menggunakan Screening Saham NASDAQ - RSI Momentum!**
+## 🎯 **Selamat menggunakan Multi-Asset Screening Dashboard!**
+
+**Aplikasi dengan STOCH RSI Integration untuk analisis saham NASDAQ dan cryptocurrency yang lebih akurat!** 📈📊🚀
