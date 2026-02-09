@@ -323,6 +323,11 @@ with tab_stocks:
     - ✅ Rata-rata RSI 7 hari terakhir > Rata-rata RSI 7 hari sebelumnya
     - ✅ Rata-rata SMA 7 hari terakhir > Rata-rata SMA 7 hari sebelumnya
     - 📊 Saham dengan momentum bullish pada kedua indikator teknikal
+    - 🎯 **Kaskade Trend Confirmation**:
+        - **1h timeframe**: Pastikan tren naik pada 4h (close > SMA)
+        - **4h timeframe**: Pastikan tren naik pada 1d (close > SMA)
+        - **1d timeframe**: Pastikan tren naik pada 1W (close > SMA)
+        - **1W timeframe**: Pastikan tren naik pada 1M (close > SMA)
 
     **⚡ Optimasi Performance:**
     - 🗄️ **Smart Caching**: Data cache dengan TTL 1-24 jam berdasarkan timeframe

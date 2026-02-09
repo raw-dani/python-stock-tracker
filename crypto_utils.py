@@ -480,8 +480,18 @@ def screen_cryptocurrency(crypto_symbol='BTC', timeframe='1d', momentum_days=7, 
         }
         period = period_map.get(timeframe, '60d')
 
+        # Fix interval mapping for Yahoo Finance
+        interval_map = {
+            '15m': '15m',
+            '1h': '1h',
+            '4h': '4h',
+            '1d': '1d',
+            '1W': '1wk'  # Yahoo Finance uses '1wk' not '1w'
+        }
+        yahoo_interval = interval_map.get(timeframe, '1d')
+
         # Fetch historical data
-        data = get_crypto_price(symbol, period=period, interval=timeframe)
+        data = get_crypto_price(symbol, period=period, interval=yahoo_interval)
 
         if data is not None and len(data) > 20:
             # Calculate technical indicators
@@ -533,6 +543,53 @@ def screen_cryptocurrency(crypto_symbol='BTC', timeframe='1d', momentum_days=7, 
 
                     # Weighted scoring: 50% momentum, 30% volume, 20% STOCH RSI
                     total_score = (momentum_score * 0.5) + (volume_score * 0.3) + (stoch_score * 0.2)
+
+                    # Additional cascading trend checks based on timeframe
+                    skip_crypto = False
+
+                    if timeframe == '15m':
+                        # Check 1h uptrend
+                        data_higher = get_crypto_price(symbol, period='60d', interval='1h')
+                        higher_tf = '1h'
+                    elif timeframe == '1h':
+                        # Check 4h uptrend
+                        data_higher = get_crypto_price(symbol, period='120d', interval='4h')
+                        higher_tf = '4h'
+                    elif timeframe == '4h':
+                        # Check 1d uptrend
+                        data_higher = get_crypto_price(symbol, period='2y', interval='1d')
+                        higher_tf = '1d'
+                    elif timeframe == '1d':
+                        # Check 1W uptrend
+                        data_higher = get_crypto_price(symbol, period='5y', interval='1W')
+                        higher_tf = '1W'
+                    elif timeframe == '1W':
+                        # Check monthly uptrend (if available, otherwise skip)
+                        try:
+                            data_higher = get_crypto_price(symbol, period='10y', interval='1mo')
+                            higher_tf = '1M'
+                        except:
+                            data_higher = None
+                            higher_tf = None
+                    else:
+                        data_higher = None
+                        higher_tf = None
+
+                    if data_higher is not None and higher_tf:
+                        data_higher = calculate_crypto_indicators(data_higher, rsi_period=rsi_period, sma_period=sma_period)
+                        if data_higher is not None and not data_higher.empty and 'sma' in data_higher.columns and not data_higher['sma'].empty:
+                            latest_close_higher = data_higher['close'].iloc[-1]
+                            latest_sma_higher = data_higher['sma'].iloc[-1]
+                            uptrend_higher = latest_close_higher > latest_sma_higher
+                            if not uptrend_higher:
+                                skip_crypto = True  # Skip if not in uptrend on higher timeframe
+                        else:
+                            skip_crypto = True  # Skip if cannot calculate higher timeframe indicators
+                    elif higher_tf:
+                        skip_crypto = True  # Skip if cannot fetch higher timeframe data
+
+                    if skip_crypto:
+                        return None  # Skip this cryptocurrency
 
                     # Determine signal based on momentum and thresholds
                     if rsi_momentum > 5 and sma_momentum > 0:

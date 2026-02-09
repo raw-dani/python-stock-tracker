@@ -432,6 +432,45 @@ def screen_stocks(symbols, interval='1h', criteria='rsi_only', rsi_period=14, sm
                     condition = False
 
                 if condition:
+                    # Additional cascading trend checks based on timeframe
+                    skip_stock = False
+
+                    if interval == '1h':
+                        # Check 4h uptrend
+                        data_higher = fetch_stock_data(symbol, interval='4h')
+                        higher_tf = '4h'
+                    elif interval == '4h':
+                        # Check 1d uptrend
+                        data_higher = fetch_stock_data(symbol, interval='1d')
+                        higher_tf = '1d'
+                    elif interval == '1d':
+                        # Check 1W uptrend
+                        data_higher = fetch_stock_data(symbol, interval='1W')
+                        higher_tf = '1W'
+                    elif interval == '1W':
+                        # Check monthly uptrend (1mo)
+                        data_higher = fetch_stock_data(symbol, period='2y', interval='1mo')
+                        higher_tf = '1M'
+                    else:
+                        data_higher = None
+                        higher_tf = None
+
+                    if data_higher is not None and higher_tf:
+                        data_higher = calculate_indicators(data_higher, rsi_period=rsi_period, sma_period=sma_period)
+                        if data_higher is not None and not data_higher.empty and 'SMA' in data_higher.columns and not data_higher['SMA'].empty:
+                            latest_close_higher = data_higher['close'].iloc[-1]
+                            latest_sma_higher = data_higher['SMA'].iloc[-1]
+                            uptrend_higher = latest_close_higher > latest_sma_higher
+                            if not uptrend_higher:
+                                skip_stock = True  # Skip if not in uptrend on higher timeframe
+                        else:
+                            skip_stock = True  # Skip if cannot calculate higher timeframe indicators
+                    elif higher_tf:
+                        skip_stock = True  # Skip if cannot fetch higher timeframe data
+
+                    if skip_stock:
+                        continue
+
                     # Calculate STOCH score for profitability calculation
                     stoch_score = 0
                     if stoch_signal == "BUY":
